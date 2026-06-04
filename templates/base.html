@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SleepIQ — Kecerdasan Kualitas Tidur{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #03040a;
+      --bg2:       #080d1a;
+      --surface:   rgba(255,255,255,.04);
+      --border:    rgba(255,255,255,.08);
+      --border-hi: rgba(99,179,237,.35);
+      --text:      #e8eaf0;
+      --muted:     #7a82a0;
+      --accent:    #63b3ed;
+      --accent2:   #9f7aea;
+      --accent3:   #68d391;
+      --warn:      #f6ad55;
+      --danger:    #fc8181;
+      --glow-a:    rgba(99,179,237,.18);
+      --glow-b:    rgba(159,122,234,.15);
+      --radius:    16px;
+      --radius-sm: 10px;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --ease:      cubic-bezier(.22,.68,0,1.2);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-body); font-size: 15px; line-height: 1.65;
+      min-height: 100vh; overflow-x: hidden;
+    }
+    #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .55; }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 200px; opacity: .4;
+    }
+    nav {
+      position: fixed; top: 0; inset-x: 0; z-index: 100;
+      padding: 0 2rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(3,4,10,.7);
+      backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid var(--border); transition: background .3s;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: .6rem;
+      font-family: var(--font-head); font-size: 1.2rem; font-weight: 800;
+      color: var(--text); text-decoration: none; letter-spacing: -.01em;
+    }
+    .nav-brand .logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid; place-items: center; font-size: .85rem;
+      box-shadow: 0 0 20px var(--glow-a);
+    }
+    .nav-links { display: flex; gap: .25rem; align-items: center; }
+    .nav-link {
+      padding: .45rem .9rem; border-radius: 8px;
+      font-size: .85rem; font-weight: 500;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s, background .2s; position: relative;
+    }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-link.active { color: var(--accent); background: rgba(99,179,237,.1); }
+    .nav-link.active::after {
+      content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+    }
+    .page-wrap { position: relative; z-index: 2; padding-top: 64px; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+    .glass {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); backdrop-filter: blur(12px);
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .glass:hover { border-color: var(--border-hi); }
+    .glass-hi { border-color: rgba(99,179,237,.2); box-shadow: 0 0 40px rgba(99,179,237,.06), 0 20px 60px rgba(0,0,0,.4); }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-label { font-size: .78rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+    .form-control, .form-select {
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text);
+      padding: .65rem .9rem; font-family: var(--font-body); font-size: .9rem;
+      outline: none; transition: border-color .2s, box-shadow .2s, background .2s; width: 100%;
+    }
+    .form-control::placeholder { color: var(--muted); opacity: .7; }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent); background: rgba(99,179,237,.06);
+      box-shadow: 0 0 0 3px rgba(99,179,237,.15);
+    }
+    .form-select {
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%237a82a0' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right .7rem center; background-size: 1rem; padding-right: 2.2rem;
+    }
+    .form-select option { background: #0d1424; color: var(--text); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .75rem 1.75rem; border-radius: var(--radius-sm);
+      font-family: var(--font-body); font-size: .9rem; font-weight: 600;
+      cursor: pointer; border: none; text-decoration: none;
+      transition: transform .2s var(--ease), box-shadow .2s, opacity .2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 20px rgba(99,179,237,.3); }
+    .btn-primary:hover { box-shadow: 0 8px 30px rgba(99,179,237,.45); }
+    .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--border-hi); background: rgba(255,255,255,.07); }
+    .label-tag {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .3rem .75rem; border-radius: 999px;
+      font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .tag-blue   { background: rgba(99,179,237,.12);  color: var(--accent);  border: 1px solid rgba(99,179,237,.2); }
+    .tag-purple { background: rgba(159,122,234,.12); color: var(--accent2); border: 1px solid rgba(159,122,234,.2); }
+    .tag-green  { background: rgba(104,211,145,.12); color: var(--accent3); border: 1px solid rgba(104,211,145,.2); }
+    .tag-orange { background: rgba(246,173,85,.12);  color: var(--warn);    border: 1px solid rgba(246,173,85,.2); }
+    .tag-red    { background: rgba(252,129,129,.12); color: var(--danger);  border: 1px solid rgba(252,129,129,.2); }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 1.5rem 0; }
+    footer { position: relative; z-index: 2; border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center; color: var(--muted); font-size: .8rem; }
+    footer a { color: var(--accent); text-decoration: none; }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    #pageLoader {
+      position: fixed; inset: 0; z-index: 9999; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+      transition: opacity .5s ease;
+    }
+    #pageLoader.done { opacity: 0; pointer-events: none; }
+    .loader-ring { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    @media (max-width: 640px) { .nav-links .nav-link span { display: none; } .container { padding: 0 1rem; } }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div id="pageLoader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">SleepIQ</div>
+</div>
+
+<canvas id="bgCanvas"></canvas>
+
+<nav id="mainNav">
+  <a href="/" class="nav-brand">
+    <div class="logo-icon">🌙</div>
+    SleepIQ
+  </a>
+  <div class="nav-links">
+    <a href="/" class="nav-link {% if request.path=='/' %}active{% endif %}">
+      <i class="fas fa-wave-square"></i> <span>Prediksi</span>
+    </a>
+    <a href="/dashboard" class="nav-link {% if request.path=='/dashboard' %}active{% endif %}">
+      <i class="fas fa-chart-scatter"></i> <span>Dasbor</span>
+    </a>
+    <a href="/about" class="nav-link {% if request.path=='/about' %}active{% endif %}">
+      <i class="fas fa-cube"></i> <span>Tentang</span>
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  <div class="container">
+    <p>Dibuat dengan <span style="color:var(--danger)">♥</span> menggunakan
+       <a href="#">Flask</a> + <a href="#">Scikit-Learn</a> —
+       Tugas 9 Kecerdasan Buatan &nbsp;·&nbsp;
+       <span style="color:var(--accent)">SleepIQ</span>
+    </p>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('pageLoader').classList.add('done');
+    setTimeout(() => document.getElementById('pageLoader').remove(), 600);
+  }, 400);
+});
+
+(function(){
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], mouse = { x: -9999, y: -9999 };
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  const COLORS = ['#63b3ed','#9f7aea','#68d391','#f6ad55'];
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x = Math.random() * W; this.y = init ? Math.random() * H : H + 10;
+      this.r = Math.random() * 1.6 + .4; this.vx = (Math.random()-.5)*.25; this.vy = -(Math.random()*.35+.1);
+      this.alpha = Math.random()*.5+.2; this.color = COLORS[Math.floor(Math.random()*COLORS.length)];
+    }
+    update() {
+      const dx=this.x-mouse.x, dy=this.y-mouse.y, dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<100){this.x+=dx/dist*1.2;this.y+=dy/dist*1.2;}
+      this.x+=this.vx; this.y+=this.vy;
+      if(this.y<-10||this.x<-10||this.x>W+10) this.reset(false);
+    }
+    draw() {
+      ctx.save(); ctx.globalAlpha=this.alpha; ctx.fillStyle=this.color;
+      ctx.shadowBlur=8; ctx.shadowColor=this.color;
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+  }
+  function connectParticles() {
+    for(let i=0;i<particles.length;i++) for(let j=i+1;j<particles.length;j++) {
+      const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<90){ctx.save();ctx.globalAlpha=(1-d/90)*.12;ctx.strokeStyle='#63b3ed';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();ctx.restore();}
+    }
+  }
+  function loop(){ctx.clearRect(0,0,W,H);particles.forEach(p=>{p.update();p.draw();});connectParticles();requestAnimationFrame(loop);}
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+  resize(); particles=Array.from({length:120},()=>new Particle()); loop();
+})();
+
+const revealObs = new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);revealObs.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

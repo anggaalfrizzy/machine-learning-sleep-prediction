@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% block title %}SleepIQ — Prediksi Kualitas Tidur{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero {
+  min-height: calc(100vh - 64px);
+  display: grid; place-items: center;
+  padding: 4rem 1.5rem 3rem; position: relative;
+}
+.hero-glow {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,179,237,.08) 0%, transparent 70%);
+  pointer-events: none; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  animation: pulse-glow 4s ease-in-out infinite alternate;
+}
+@keyframes pulse-glow {
+  from { opacity:.6; transform:translate(-50%,-50%) scale(1); }
+  to   { opacity:1;  transform:translate(-50%,-50%) scale(1.15); }
+}
+.hero-inner { max-width: 760px; margin: 0 auto; text-align: center; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .35rem 1rem; border-radius: 999px;
+  background: rgba(99,179,237,.08); border: 1px solid rgba(99,179,237,.2);
+  font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1.5rem;
+  animation: fadeDown .6s ease both;
+}
+@keyframes fadeDown { from { opacity:0; transform:translateY(-12px); } }
+.hero-title {
+  font-family: var(--font-head); font-weight: 800; letter-spacing: -.04em;
+  font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.05; margin-bottom: 1.25rem;
+  animation: fadeUp .7s .1s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } }
+.hero-title .accent-word {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  color: var(--muted); font-size: 1.05rem; max-width: 540px;
+  margin: 0 auto 2.5rem; animation: fadeUp .7s .2s ease both;
+}
+.hero-badges {
+  display: flex; justify-content: center; gap: .75rem; flex-wrap: wrap;
+  margin-bottom: 3.5rem; animation: fadeUp .7s .3s ease both;
+}
+.form-section { padding: 2rem 1.5rem 6rem; }
+.form-header { text-align: center; margin-bottom: 3rem; }
+.form-header h2 {
+  font-family: var(--font-head); font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.03em; margin-bottom: .5rem;
+}
+.form-header p { color: var(--muted); font-size: .95rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 2.5rem; }
+@media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
+.form-section-label {
+  grid-column: 1/-1;
+  display: flex; align-items: center; gap: .75rem;
+  font-family: var(--font-head); font-size: .85rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: .5rem;
+}
+.form-section-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+.form-hint { font-size: .76rem; color: var(--muted); margin-top: .3rem; }
+.submit-row { grid-column: 1/-1; text-align: center; padding-top: 1.5rem; }
+.btn-submit { padding: .9rem 3rem; font-size: 1rem; border-radius: var(--radius); position: relative; overflow: hidden; }
+.btn-submit::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15)); opacity:0; transition:opacity .3s; }
+.btn-submit:hover::after { opacity:1; }
+.btn-submit .spin { display:none; }
+.btn-submit.loading .spin { display:inline-block; }
+.btn-submit.loading .icon { display:none; }
+.error-banner {
+  background: rgba(252,129,129,.08); border: 1px solid rgba(252,129,129,.25);
+  border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+  color: var(--danger); display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem;
+}
+.quality-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: 4rem; }
+@media (max-width: 600px) { .quality-cards { grid-template-columns: 1fr; } }
+.q-card {
+  padding: 1.5rem; border-radius: var(--radius); text-align: center;
+  border: 1px solid var(--border); background: var(--surface);
+  transition: transform .25s var(--ease), border-color .25s;
+}
+.q-card:hover { transform: translateY(-4px); }
+.q-card.low  { border-color: rgba(252,129,129,.2); }
+.q-card.mid  { border-color: rgba(246,173,85,.2); }
+.q-card.high { border-color: rgba(104,211,145,.2); }
+.q-card .emoji { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+.q-card h3 { font-family: var(--font-head); font-size: 1rem; font-weight: 700; margin-bottom: .35rem; }
+.q-card p  { font-size: .82rem; color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <i class="fas fa-brain"></i>
+      Analisis Tidur Berbasis AI
+    </div>
+    <h1 class="hero-title">
+      Ketahui Kualitas<br>
+      <span class="accent-word">Tidur Anda</span>
+    </h1>
+    <p class="hero-sub">
+      Masukkan data kesehatan dan gaya hidup Anda, lalu model
+      K-Nearest Neighbors kami akan memprediksi kategori kualitas tidur Anda secara instan.
+    </p>
+    <div class="hero-badges">
+      <span class="label-tag tag-blue"><i class="fas fa-database"></i> 374 Data</span>
+      <span class="label-tag tag-purple"><i class="fas fa-sitemap"></i> Algoritma KNN</span>
+      <span class="label-tag tag-green"><i class="fas fa-check-circle"></i> Akurasi 94,67%</span>
+      <span class="label-tag tag-orange"><i class="fas fa-sync"></i> CV 5-Fold: 95,71%</span>
+    </div>
+    <a href="#form-prediksi" class="btn btn-primary btn-submit" style="text-decoration:none;">
+      <i class="fas fa-arrow-down icon"></i> Mulai Prediksi
+    </a>
+  </div>
+</section>
+
+<!-- FORM -->
+<section class="form-section" id="form-prediksi">
+  <div class="container">
+
+    {% if error %}
+    <div class="error-banner reveal">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <div class="form-header reveal">
+      <div class="label-tag tag-blue" style="margin:0 auto 1rem;width:fit-content;">
+        <i class="fas fa-clipboard-list"></i> Formulir Input
+      </div>
+      <h2>Data Kesehatan & Gaya Hidup</h2>
+      <p>Isi semua kolom di bawah ini untuk mendapatkan prediksi kualitas tidur Anda</p>
+    </div>
+
+    <div class="glass glass-hi reveal" style="padding:2.5rem 2rem 2rem;">
+      <form method="POST" action="/predict" id="predForm">
+        <div class="form-grid">
+
+          <!-- Data Pribadi -->
+          <div class="form-section-label">
+            <i class="fas fa-user" style="color:var(--accent)"></i> Data Pribadi
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Usia (tahun)</label>
+            <input type="number" class="form-control" name="age" min="18" max="80" placeholder="contoh: 30" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Jenis Kelamin</label>
+            <select class="form-select" name="gender" required>
+              <option value="">Pilih jenis kelamin</option>
+              <option value="Male">Laki-laki</option>
+              <option value="Female">Perempuan</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Pekerjaan</label>
+            <select class="form-select" name="occupation" required>
+              <option value="">Pilih pekerjaan</option>
+              {% for occ in occupations %}
+              <option value="{{ occ }}">{{ occ }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Kategori BMI</label>
+            <select class="form-select" name="bmi_category" required>
+              <option value="">Pilih kategori BMI</option>
+              {% for b in bmi_cats %}
+              <option value="{{ b }}">{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Gangguan Tidur</label>
+            <select class="form-select" name="sleep_disorder" required>
+              <option value="">Pilih gangguan tidur</option>
+              {% for d in sleep_dis %}
+              <option value="{{ d }}">{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Data Kesehatan -->
+          <div class="form-section-label">
+            <i class="fas fa-heartbeat" style="color:var(--danger)"></i> Data Kesehatan & Gaya Hidup
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Durasi Tidur (jam)</label>
+            <input type="number" step="0.1" class="form-control" name="sleep_duration" min="3" max="12" placeholder="contoh: 7.5" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Aktivitas Fisik (menit/hari)</label>
+            <input type="number" class="form-control" name="physical_activity" min="0" max="180" placeholder="contoh: 45" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tingkat Stres (1 – 10)</label>
+            <input type="number" class="form-control" name="stress_level" min="1" max="10" placeholder="contoh: 5" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Detak Jantung (bpm)</label>
+            <input type="number" class="form-control" name="heart_rate" min="50" max="130" placeholder="contoh: 72" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Langkah Kaki Harian</label>
+            <input type="number" class="form-control" name="daily_steps" min="500" max="30000" placeholder="contoh: 8000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tekanan Darah</label>
+            <input type="text" class="form-control" name="blood_pressure" pattern="\d{2,3}\/\d{2,3}" placeholder="contoh: 120/80" required>
+            <span class="form-hint">Format: sistolik/diastolik</span>
+          </div>
+
+          <!-- Tombol Submit -->
+          <div class="submit-row">
+            <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+              <i class="fas fa-search icon"></i>
+              <i class="fas fa-spinner fa-spin spin"></i>
+              Analisis Tidur Saya
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Kartu Keterangan Kualitas -->
+    <div class="quality-cards">
+      <div class="q-card low reveal">
+        <span class="emoji">😔</span>
+        <h3 style="color:var(--danger)">Kualitas Rendah</h3>
+        <p>Skor tidur 1–5. Memerlukan perhatian dan perubahan gaya hidup.</p>
+      </div>
+      <div class="q-card mid reveal" style="transition-delay:.1s">
+        <span class="emoji">😐</span>
+        <h3 style="color:var(--warn)">Kualitas Sedang</h3>
+        <p>Skor tidur 6–7. Cukup baik, namun masih bisa ditingkatkan.</p>
+      </div>
+      <div class="q-card high reveal" style="transition-delay:.2s">
+        <span class="emoji">😊</span>
+        <h3 style="color:var(--accent3)">Kualitas Tinggi</h3>
+        <p>Skor tidur 8–9. Luar biasa — pertahankan kebiasaan sehat ini!</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('predForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+});
+setTimeout(() => { document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el)); }, 100);
+</script>
+{% endblock %}

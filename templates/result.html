@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% block title %}SleepIQ — Hasil Prediksi{% endblock %}
+
+{% block extra_css %}
+<style>
+.result-page { padding: 4rem 1.5rem 6rem; }
+.result-hero { text-align: center; max-width: 680px; margin: 0 auto 4rem; }
+.result-badge-wrap { margin-bottom: 2rem; }
+.result-badge {
+  display: inline-flex; align-items: center; gap: .75rem;
+  padding: .6rem 1.75rem; border-radius: 999px;
+  font-family: var(--font-head); font-weight: 800;
+  font-size: 1.4rem; letter-spacing: -.01em;
+  position: relative; overflow: hidden;
+  animation: badge-in .6s .3s var(--ease) both;
+}
+@keyframes badge-in { from{opacity:0;transform:scale(.7);} to{opacity:1;transform:scale(1);} }
+.result-badge.low    { background:rgba(252,129,129,.12); color:var(--danger); border:2px solid rgba(252,129,129,.35); box-shadow:0 0 40px rgba(252,129,129,.12); }
+.result-badge.medium { background:rgba(246,173,85,.12);  color:var(--warn);   border:2px solid rgba(246,173,85,.35);  box-shadow:0 0 40px rgba(246,173,85,.12); }
+.result-badge.high   { background:rgba(104,211,145,.12); color:var(--accent3);border:2px solid rgba(104,211,145,.35); box-shadow:0 0 40px rgba(104,211,145,.12);}
+.result-badge .badge-glow { position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% -20%,rgba(255,255,255,.18),transparent 60%); }
+.result-emoji { font-size:5rem;display:block;margin-bottom:1rem;animation:emoji-bounce .6s .5s var(--ease) both; }
+@keyframes emoji-bounce { from{transform:scale(0) rotate(-10deg);} to{transform:scale(1) rotate(0);} }
+.result-title { font-family:var(--font-head);font-size:clamp(2rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.75rem;animation:fadeUp .6s .2s ease both; }
+.result-desc { color:var(--muted);font-size:1rem;max-width:480px;margin:0 auto;animation:fadeUp .6s .3s ease both; }
+.result-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1000px;margin:0 auto; }
+@media(max-width:720px){.result-grid{grid-template-columns:1fr;}}
+.result-card { padding:1.75rem;border-radius:var(--radius); }
+.prob-row { margin-bottom:1.2rem; }
+.prob-row:last-child { margin-bottom:0; }
+.prob-label { display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem; }
+.prob-name { font-weight:600;font-size:.9rem; }
+.prob-pct  { font-family:var(--font-head);font-weight:700;font-size:1rem; }
+.prob-track { height:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden; }
+.prob-fill { height:100%;border-radius:99px;width:0;transition:width 1s ease; }
+.prob-fill.low    { background:linear-gradient(90deg,#fc8181,#f56565); }
+.prob-fill.medium { background:linear-gradient(90deg,#f6ad55,#ed8936); }
+.prob-fill.high   { background:linear-gradient(90deg,#68d391,#48bb78); }
+.tip-list { display:flex;flex-direction:column;gap:.65rem; }
+.tip-item {
+  display:flex;align-items:flex-start;gap:.75rem;
+  padding:.75rem 1rem;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  font-size:.88rem;line-height:1.5;
+  opacity:0;transform:translateX(-12px);transition:opacity .4s ease,transform .4s ease;
+}
+.tip-item.visible { opacity:1;transform:none; }
+.tip-icon { color:var(--accent3);flex-shrink:0;margin-top:2px; }
+.summary-card { grid-column:1/-1;padding:1.75rem; }
+.summary-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-top:1rem; }
+.summary-item { padding:.85rem 1rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.03);border:1px solid var(--border); }
+.summary-item .s-label { font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.3rem; }
+.summary-item .s-val   { font-weight:600;font-size:.9rem;color:var(--text); }
+.action-row { grid-column:1/-1;display:flex;justify-content:center;gap:1rem;padding-top:1rem;flex-wrap:wrap; }
+.card-heading { font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem; }
+.card-heading i { font-size:.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="result-page">
+  <div class="container">
+
+    <!-- Hasil Hero -->
+    <div class="result-hero reveal">
+      <span class="result-emoji">
+        {% if prediction == 'Rendah' %}😔
+        {% elif prediction == 'Sedang' %}😐
+        {% else %}😊{% endif %}
+      </span>
+
+      <div class="result-badge-wrap">
+        <div class="result-badge
+          {% if prediction == 'Rendah' %}low
+          {% elif prediction == 'Sedang' %}medium
+          {% else %}high{% endif %}">
+          <div class="badge-glow"></div>
+          <i class="fas fa-moon"></i>
+          Kualitas Tidur {{ prediction }}
+        </div>
+      </div>
+
+      <h1 class="result-title">Prediksi Selesai</h1>
+      <p class="result-desc">
+        {% if prediction == 'Rendah' %}
+          Kualitas tidur Anda tergolong rendah. Tinjau rekomendasi di bawah ini untuk memperbaikinya.
+        {% elif prediction == 'Sedang' %}
+          Kualitas tidur Anda cukup baik. Sedikit perbaikan dapat memberikan dampak besar.
+        {% else %}
+          Kualitas tidur Anda sangat baik! Terus pertahankan kebiasaan sehat ini.
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Grid Kartu -->
+    <div class="result-grid">
+
+      <!-- Probabilitas -->
+      <div class="glass reveal result-card">
+        <div class="card-heading">
+          <i class="fas fa-chart-pie" style="color:var(--accent)"></i>
+          Tingkat Keyakinan Prediksi
+        </div>
+        {% set color_map = {'Rendah':'low','Sedang':'medium','Tinggi':'high'} %}
+        {% set hex_map   = {'Rendah':'var(--danger)','Sedang':'var(--warn)','Tinggi':'var(--accent3)'} %}
+        {% for label, prob in prob_dict.items() %}
+        <div class="prob-row">
+          <div class="prob-label">
+            <span class="prob-name">{{ label }}</span>
+            <span class="prob-pct" style="color:{{ hex_map.get(label,'var(--accent)') }}">{{ prob }}%</span>
+          </div>
+          <div class="prob-track">
+            <div class="prob-fill {{ color_map.get(label,'') }}" data-width="{{ prob }}"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Rekomendasi -->
+      <div class="glass reveal result-card" style="transition-delay:.1s">
+        <div class="card-heading">
+          <i class="fas fa-lightbulb" style="color:var(--warn)"></i>
+          Rekomendasi Pribadi
+        </div>
+        <div class="tip-list" id="tipList">
+          {% for tip in tips %}
+          <div class="tip-item">
+            <i class="fas fa-check tip-icon"></i>
+            <span>{{ tip }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Ringkasan Input -->
+      <div class="glass reveal summary-card" style="transition-delay:.2s">
+        <div class="card-heading">
+          <i class="fas fa-table-list" style="color:var(--accent2)"></i>
+          Ringkasan Data Input
+        </div>
+        <div class="summary-grid">
+          {% for key, val in input_data.items() %}
+          <div class="summary-item">
+            <div class="s-label">{{ key }}</div>
+            <div class="s-val">{{ val }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tombol Aksi -->
+      <div class="action-row reveal" style="transition-delay:.3s">
+        <a href="/" class="btn btn-primary" style="text-decoration:none;">
+          <i class="fas fa-redo"></i> Prediksi Ulang
+        </a>
+        <a href="/dashboard" class="btn btn-ghost" style="text-decoration:none;">
+          <i class="fas fa-chart-bar"></i> Lihat Dasbor
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.prob-fill').forEach(el => { el.style.width = el.dataset.width + '%'; });
+  }, 500);
+  document.querySelectorAll('.tip-item').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 700 + i * 150);
+  });
+});
+</script>
+{% endblock %}

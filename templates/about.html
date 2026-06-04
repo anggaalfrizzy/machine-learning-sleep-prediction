@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}SleepIQ — Tentang Aplikasi{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-page { padding: 4rem 1.5rem 6rem; }
+.page-header { text-align: center; margin-bottom: 4rem; }
+.page-header h1 { font-family:var(--font-head);font-size:clamp(2rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.5rem; }
+.page-header p { color: var(--muted); }
+.about-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:1000px;margin:0 auto; }
+@media(max-width:700px){.about-grid{grid-template-columns:1fr;}}
+.about-card { padding:2rem;border-radius:var(--radius); }
+.about-card.full { grid-column:1/-1; }
+.card-heading { font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem; }
+.step-list { display:flex;flex-direction:column;gap:1rem; }
+.step-item { display:flex;align-items:flex-start;gap:1rem; }
+.step-num {
+  width:28px;height:28px;flex-shrink:0;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--font-head);
+  font-size:.75rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+}
+.step-text { font-size:.88rem;color:var(--muted);line-height:1.55;padding-top:3px; }
+.step-text strong { color:var(--text); }
+.tech-grid { display:flex;flex-wrap:wrap;gap:.5rem; }
+.tech-pill {
+  padding:.35rem .85rem;border-radius:999px;font-size:.78rem;font-weight:600;letter-spacing:.03em;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  transition:border-color .2s,color .2s;
+}
+.tech-pill:hover{border-color:var(--border-hi);color:var(--text);}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.65rem;margin-top:.75rem;}
+.feat-item{padding:.65rem .85rem;border-radius:var(--radius-sm);background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;}
+.feat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--accent);}
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:500px){.info-row{grid-template-columns:1fr;}}
+.info-item .i-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.2rem;}
+.info-item .i-val{font-weight:600;font-size:.9rem;}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="about-page">
+  <div class="container">
+
+    <div class="page-header reveal">
+      <div class="label-tag tag-green" style="margin:0 auto 1rem;width:fit-content;">
+        <i class="fas fa-cube"></i> Tentang Proyek
+      </div>
+      <h1>SleepIQ — Kecerdasan Kualitas Tidur</h1>
+      <p>Implementasi K-Nearest Neighbors end-to-end untuk prediksi kualitas tidur</p>
+    </div>
+
+    <div class="about-grid">
+
+      <!-- Deskripsi -->
+      <div class="glass about-card reveal">
+        <div class="card-heading"><i class="fas fa-info-circle" style="color:var(--accent)"></i> Gambaran Proyek</div>
+        <p style="color:var(--muted);font-size:.9rem;line-height:1.7;margin-bottom:1rem">
+          <strong style="color:var(--text)">SleepIQ</strong> adalah aplikasi web machine learning yang memprediksi
+          kualitas tidur menggunakan algoritma <strong style="color:var(--accent)">K-Nearest Neighbors (KNN)</strong>.
+        </p>
+        <p style="color:var(--muted);font-size:.9rem;line-height:1.7;margin-bottom:1rem">
+          Dilatih menggunakan <em>Sleep Health & Lifestyle Dataset</em> (374 data), model mengklasifikasikan
+          kualitas tidur ke dalam tiga kategori: <span style="color:var(--danger)">Rendah</span>,
+          <span style="color:var(--warn)">Sedang</span>, dan
+          <span style="color:var(--accent3)">Tinggi</span>.
+        </p>
+        <div class="divider"></div>
+        <div class="info-row">
+          <div class="info-item"><div class="i-label">Akurasi</div><div class="i-val" style="color:var(--accent3)">94,67%</div></div>
+          <div class="info-item"><div class="i-label">Skor CV</div><div class="i-val" style="color:var(--accent)">95,71%</div></div>
+          <div class="info-item"><div class="i-label">K Optimal</div><div class="i-val" style="color:var(--accent2)">15</div></div>
+          <div class="info-item"><div class="i-label">Ukuran Dataset</div><div class="i-val">374 baris</div></div>
+        </div>
+      </div>
+
+      <!-- Teknologi -->
+      <div class="glass about-card reveal" style="transition-delay:.1s">
+        <div class="card-heading"><i class="fas fa-layer-group" style="color:var(--accent2)"></i> Teknologi yang Digunakan</div>
+        <div class="tech-grid">
+          {% for tech in ['Python 3.12','Flask 3.0','Scikit-Learn','Pandas','NumPy','Matplotlib','Seaborn','Bootstrap 5','Gunicorn'] %}
+          <div class="tech-pill">{{ tech }}</div>
+          {% endfor %}
+        </div>
+        <div class="divider"></div>
+        <div class="card-heading" style="margin-bottom:.75rem"><i class="fas fa-cloud-upload-alt" style="color:var(--accent3)"></i> Platform Deployment</div>
+        <div class="tech-grid">
+          {% for t in ['Render.com','Railway.app','Heroku'] %}
+          <div class="tech-pill">{{ t }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Alur KNN -->
+      <div class="glass about-card reveal" style="transition-delay:.2s">
+        <div class="card-heading"><i class="fas fa-shoe-prints" style="color:var(--warn)"></i> Alur Kerja KNN</div>
+        <div class="step-list">
+          <div class="step-item"><div class="step-num">1</div><div class="step-text"><strong>Pengumpulan Data</strong> — Dataset Sleep Health & Lifestyle (Kaggle)</div></div>
+          <div class="step-item"><div class="step-num">2</div><div class="step-text"><strong>Preprocessing</strong> — Label encoding, rekayasa fitur, StandardScaler</div></div>
+          <div class="step-item"><div class="step-num">3</div><div class="step-text"><strong>NearestNeighbors</strong> — Cosine similarity (sesuai modul 9.6)</div></div>
+          <div class="step-item"><div class="step-num">4</div><div class="step-text"><strong>Metode Elbow</strong> — Plot error rate untuk menemukan kandidat K</div></div>
+          <div class="step-item"><div class="step-num">5</div><div class="step-text"><strong>Cross-Validation</strong> — CV 5-fold memilih K=15</div></div>
+          <div class="step-item"><div class="step-num">6</div><div class="step-text"><strong>Prediksi</strong> — Voting mayoritas dari 15 tetangga terdekat</div></div>
+        </div>
+      </div>
+
+      <!-- Fitur -->
+      <div class="glass about-card reveal" style="transition-delay:.3s">
+        <div class="card-heading"><i class="fas fa-database" style="color:var(--danger)"></i> Fitur Input Model (12 Fitur)</div>
+        <div class="feature-grid">
+          {% for f in ['Usia','Jenis Kelamin','Pekerjaan','Durasi Tidur','Aktivitas Fisik','Tingkat Stres','Kategori BMI','Detak Jantung','Langkah Harian','Sistolik','Diastolik','Gangguan Tidur'] %}
+          <div class="feat-item"><span class="feat-dot"></span>{{ f }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Info Tugas -->
+      <div class="glass about-card full reveal" style="transition-delay:.4s">
+        <div class="card-heading"><i class="fas fa-graduation-cap" style="color:var(--accent)"></i> Informasi Tugas</div>
+        <div class="info-row" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+          <div class="info-item"><div class="i-label">Mata Kuliah</div><div class="i-val">Kecerdasan Buatan</div></div>
+          <div class="info-item"><div class="i-label">Tugas</div><div class="i-val">Tugas 9 — KNN Flask</div></div>
+          <div class="info-item"><div class="i-label">Dosen</div><div class="i-val">Mohammad Bayu Anggara, S.Kom., M.Kom.</div></div>
+          <div class="info-item"><div class="i-label">Sumber Dataset</div><div class="i-val">Kaggle — Sleep Health & Lifestyle</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

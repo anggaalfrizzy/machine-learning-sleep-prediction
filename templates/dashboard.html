@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}SleepIQ — Dasbor Model{% endblock %}
+
+{% block extra_css %}
+<style>
+.dash-page { padding: 4rem 1.5rem 6rem; }
+.page-header { text-align: center; margin-bottom: 4rem; }
+.page-header h1 { font-family:var(--font-head);font-size:clamp(2rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.5rem; }
+.page-header p { color: var(--muted); }
+.stat-strip { display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem; }
+@media(max-width:800px){.stat-strip{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.stat-strip{grid-template-columns:1fr 1fr;}}
+.stat-tile {
+  padding:1.5rem;border-radius:var(--radius);text-align:center;
+  border:1px solid var(--border);background:var(--surface);
+  position:relative;overflow:hidden;
+  transition:transform .25s var(--ease),border-color .25s;
+}
+.stat-tile:hover{transform:translateY(-4px);border-color:var(--border-hi);}
+.stat-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.st-blue::before   {background:linear-gradient(90deg,var(--accent),transparent);}
+.st-purple::before {background:linear-gradient(90deg,var(--accent2),transparent);}
+.st-green::before  {background:linear-gradient(90deg,var(--accent3),transparent);}
+.st-orange::before {background:linear-gradient(90deg,var(--warn),transparent);}
+.stat-number{font-family:var(--font-head);font-size:2.2rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.25rem;}
+.stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.stat-icon{font-size:1.8rem;margin-bottom:.75rem;}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+@media(max-width:720px){.chart-row{grid-template-columns:1fr;}}
+.chart-card{padding:1.75rem;border-radius:var(--radius);}
+.chart-card img{width:100%;border-radius:var(--radius-sm);display:block;margin-top:1rem;border:1px solid var(--border);transition:transform .3s;}
+.chart-card img:hover{transform:scale(1.02);}
+.chart-card-full{grid-column:1/-1;}
+.card-heading{font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem;}
+.card-sub{font-size:.8rem;color:var(--muted);}
+.report-table{width:100%;border-collapse:collapse;margin-top:1.25rem;}
+.report-table th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:.6rem 1rem;border-bottom:1px solid var(--border);}
+.report-table td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem;}
+.report-table tr:last-child td{border-bottom:none;}
+.report-table tr:hover td{background:rgba(255,255,255,.025);}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="dash-page">
+  <div class="container">
+
+    <div class="page-header reveal">
+      <div class="label-tag tag-purple" style="margin:0 auto 1rem;width:fit-content;">
+        <i class="fas fa-chart-scatter"></i> Evaluasi Model
+      </div>
+      <h1>Dasbor Performa Model</h1>
+      <p>Metrik evaluasi, confusion matrix, dan visualisasi model KNN</p>
+    </div>
+
+    <!-- Statistik Utama -->
+    <div class="stat-strip">
+      <div class="stat-tile st-blue reveal">
+        <div class="stat-icon" style="color:var(--accent)">🎯</div>
+        <div class="stat-number" style="color:var(--accent)" data-target="{{ metrics.accuracy }}">0</div>
+        <div class="stat-label">Akurasi Test %</div>
+      </div>
+      <div class="stat-tile st-purple reveal" style="transition-delay:.08s">
+        <div class="stat-icon" style="color:var(--accent2)">🔁</div>
+        <div class="stat-number" style="color:var(--accent2)" data-target="{{ metrics.cv_mean }}">0</div>
+        <div class="stat-label">Akurasi CV %</div>
+      </div>
+      <div class="stat-tile st-green reveal" style="transition-delay:.16s">
+        <div class="stat-icon" style="color:var(--accent3)">🔍</div>
+        <div class="stat-number" style="color:var(--accent3)" data-target="{{ metrics.best_k }}">0</div>
+        <div class="stat-label">K Optimal</div>
+      </div>
+      <div class="stat-tile st-orange reveal" style="transition-delay:.24s">
+        <div class="stat-icon" style="color:var(--warn)">📊</div>
+        <div class="stat-number" style="color:var(--warn)" data-target="{{ metrics.cv_std }}">0</div>
+        <div class="stat-label">Std Deviasi CV %</div>
+      </div>
+    </div>
+
+    <!-- Grafik -->
+    <div class="chart-row">
+      <div class="glass chart-card reveal">
+        <div class="card-heading"><i class="fas fa-chart-line" style="color:var(--accent)"></i> Metode Elbow</div>
+        <div class="card-sub">Menentukan nilai K optimal berdasarkan error rate</div>
+        <img src="/static/elbow_plot.png" alt="Elbow Plot" loading="lazy">
+      </div>
+      <div class="glass chart-card reveal" style="transition-delay:.1s">
+        <div class="card-heading"><i class="fas fa-th" style="color:var(--accent2)"></i> Confusion Matrix</div>
+        <div class="card-sub">Hasil klasifikasi pada data uji</div>
+        <img src="/static/confusion_matrix.png" alt="Confusion Matrix" loading="lazy">
+      </div>
+      <div class="glass chart-card chart-card-full reveal" style="transition-delay:.2s">
+        <div class="card-heading"><i class="fas fa-chart-bar" style="color:var(--accent3)"></i> Distribusi Dataset</div>
+        <div class="card-sub">Persebaran kategori kualitas tidur dari 374 data</div>
+        <img src="/static/distribution.png" alt="Distribusi" loading="lazy" style="max-width:580px;margin:1rem auto 0;">
+      </div>
+    </div>
+
+    <!-- Laporan Klasifikasi -->
+    <div class="glass reveal" style="padding:1.75rem;transition-delay:.3s">
+      <div class="card-heading"><i class="fas fa-table" style="color:var(--warn)"></i> Laporan Klasifikasi per Kelas</div>
+      <div class="card-sub" style="margin-bottom:.25rem">Precision, recall & F1-score untuk setiap kelas target</div>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Kelas</th><th>Presisi</th><th>Recall</th><th>F1-Score</th><th>Jumlah Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set classes = [('Rendah', metrics.rendah, 'tag-red', 'var(--danger)'),
+                            ('Sedang', metrics.sedang, 'tag-orange', 'var(--warn)'),
+                            ('Tinggi', metrics.tinggi, 'tag-green', 'var(--accent3)')] %}
+          {% for name, r, tag, color in classes %}
+          <tr>
+            <td><span class="label-tag {{ tag }}" style="font-size:.72rem">{{ name }}</span></td>
+            <td style="font-family:var(--font-head);font-weight:700;color:{{ color }}">{{ "%.2f"|format(r.get('precision',0)) }}</td>
+            <td style="font-family:var(--font-head);font-weight:700;color:{{ color }}">{{ "%.2f"|format(r.get('recall',0)) }}</td>
+            <td style="font-family:var(--font-head);font-weight:700;color:{{ color }}">{{ "%.2f"|format(r.get('f1-score',0)) }}</td>
+            <td style="color:var(--muted)">{{ r.get('support',0)|int }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function animateCount(el, target, duration=1200) {
+  const start = performance.now();
+  const isFloat = String(target).includes('.');
+  function step(ts) {
+    const progress = Math.min((ts - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = ease * target;
+    el.textContent = isFloat ? current.toFixed(2) : Math.round(current);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = isFloat ? Number(target).toFixed(2) : target;
+  }
+  requestAnimationFrame(step);
+}
+const statObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCount(e.target, parseFloat(e.target.dataset.target));
+      statObs.unobserve(e.target);
+    }
+  });
+}, { threshold: .5 });
+document.querySelectorAll('.stat-number[data-target]').forEach(el => statObs.observe(el));
+</script>
+{% endblock %}
